@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = ["cereja_ai*"]
+exclude = ["docs*", "tests*", "lab*"]
+
+[project]
+name = "cereja-ai"
+dynamic = ["version", "dependencies"]
+authors = [
+    { name="Joab Leite", email="leitejoab@gmail.com" },
+]
+description = "Cereja-AI is a lib that makes available AI model architectures and pre-trained models for diverse usage."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["tensorflow", "keras", "models"]
+requires-python = ">=3.6"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "cereja_ai.__version__"}
+dependencies = {file = ["requirements.txt"]}
+
+[project.urls]
+"Homepage" = "https://github.com/cereja-project/cereja-ai"
+"Bug Tracker" = "https://github.com/cereja-project/cereja-ai/issues/new/choose"
+
+

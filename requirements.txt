@@ -1,0 +1,5 @@
+cereja==1.8.4
+tensorflow
+calango~=2.2.5
+mediapipe~=0.9.1.0
+opencv-python~=4.7.0.72
