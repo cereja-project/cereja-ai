@@ -1,5 +1,6 @@
 cereja==1.8.4
 tensorflow
-calango~=2.2.5
+numpy
+calango~=2.2.6
 mediapipe
 opencv-python~=4.7.0.72
