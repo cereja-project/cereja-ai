@@ -1,18 +1,108 @@
+from abc import abstractmethod
+
 import calango
 import numpy as np
+import mediapipe as mp
 import cv2
 
-__all__ = ['VideoKeypointsExtractor']
+mp_drawing = mp.solutions.drawing_utils
+mp_drawing_styles = mp.solutions.drawing_styles
+mp_holistic = mp.solutions.holistic
+
+__all__ = ['VideoKeypointsExtractor', 'SequenceArray']
 MAPED_FACE_LANDMARKS = [398, 384, 385, 386, 387, 388, 466, 362, 382, 381, 380, 374, 373, 390, 249]  # left eye
 MAPED_FACE_LANDMARKS += [246, 7, 161, 160, 159, 158, 157, 173, 163, 144, 145, 153, 154, 155]  # right eye
 
 
+class SequenceArray:
+    def __init__(self, arr, dtype=None):
+        arr = np.array(arr, dtype=dtype)
+        self._default_shape = arr.shape[1:]
+        self._data = arr
+
+    @classmethod
+    def empty(cls, shape, dtype=None):
+        return cls(np.empty([0, *shape], dtype=dtype))
+
+    @property
+    def is_empty(self):
+        return len(self.data) == 0
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def shape(self):
+        return self._data.shape
+
+    def clean(self):
+        """
+        Turn empty.
+        """
+        self._data = np.empty([0, *self._default_shape], dtype=self._data.dtype)
+
+    def append(self, new_data):
+        """
+        Similar to the append method of a list
+        """
+        self._data = np.vstack([self._data, self._check_and_parse(new_data)])
+
+    def pop_batch(self, batch_size):
+        batch = self[:batch_size]
+        self._data = self[batch_size:]
+        return batch
+
+    def _check_and_parse(self, v):
+        if isinstance(v, (list, tuple, np.ndarray)):
+            v = np.array(v, ndmin=len(self.shape))
+        else:
+            raise TypeError("Tipo de dados inválido.")
+        _shape = v.shape
+        assert self.shape[1:] == _shape[1:], f"Formato {_shape} é inválido"
+        return v
+
+    def __str__(self):
+        return self._data.__str__()
+
+    def __repr__(self):
+        return self._data.__repr__()
+
+    def __getitem__(self, item):
+        return SequenceArray(self._data.__getitem__(item))
+
+    def __len__(self):
+        return self.data.__len__()
+
+    def __iter__(self):
+        return self._data.__iter__()
+
+    def __eq__(self, other):
+        return self._data.__eq__(other)
+
+    def __matmul__(self, other):
+        return SequenceArray(self._data.__matmul__(other))
+
+    def __add__(self, other):
+        return SequenceArray(self._data.__add__(other))
+
+    def __sub__(self, other):
+        return SequenceArray(self._data.__sub__(other))
+
+    def __mul__(self, other):
+        return SequenceArray(self._data.__mul__(other))
+
+    def __rmul__(self, other):
+        return SequenceArray(self._data.__rmul__(other))
+
+    def __truediv__(self, other):
+        return SequenceArray(self._data.__truediv__(other))
+
+    def __iadd__(self, other):
+        return SequenceArray(self._data.__iadd__(other))
+
+
 def _mediapipe_generator(draw=False):
-    import mediapipe as mp
-    import cv2
-    mp_drawing = mp.solutions.drawing_utils
-    mp_drawing_styles = mp.solutions.drawing_styles
-    mp_holistic = mp.solutions.holistic
     with mp_holistic.Holistic(
             min_detection_confidence=0.5,
             min_tracking_confidence=0.5) as holistic:
