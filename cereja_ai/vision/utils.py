@@ -53,6 +53,32 @@ class SequenceArray:
         self._data = self[batch_size:]
         return batch
 
+    def interpolate(self):
+        """
+        Preenche valores vazios em uma sequência de coordenadas 3D.
+        Args:
+        - kpts: numpy.array de formato (seq_len, n_points, 3) com coordenadas 3D.
+        Returns:
+        - kpts_interp: numpy.array de formato (seq_len, n_points, 3) com valores interpolados.
+        """
+
+        # Identifica os pontos com valores faltantes
+        has_missing_values = np.any(self._data == 0, axis=-1)
+        if not np.any(has_missing_values):
+            return
+        idxs = np.unique(np.where(has_missing_values)[0])
+        # Quebra sequência quando o próximo não é subsequente
+        diff_idxs = np.where(np.diff(idxs) != 1)[0] + 1
+        idxs = np.split(idxs, diff_idxs)
+
+        # Interpola os valores faltantes
+        for seq in idxs:
+            # Se o primeiro frame está zerado pegamos o próximo válido
+            # TODO: Verificar se faz sentido pegar o último frame que pode ser repouso. Ou definir os kpts de repouso para não iniciar zerado.
+            last_valid = seq[0] - 1 if seq[0] > 0 else seq[-1] + 1
+            next_valid = seq[-1] + 1
+            self._data[seq,] = np.linspace(self._data[last_valid], self._data[next_valid], len(seq))
+
     def _check_and_parse(self, v):
         if isinstance(v, (list, tuple, np.ndarray)):
             v = np.array(v, ndmin=len(self.shape))
@@ -118,7 +144,7 @@ def _mediapipe_generator(draw=False):
             image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
             if results.pose_landmarks:
-                pose = [(i.x, i.y, i.z) for i in results.pose_landmarks.landmark]
+                pose = [(i.x, i.y, i.z) for iw in results.pose_landmarks.landmark]
                 # if draw:
                 #     mp_drawing.draw_landmarks(
                 #             image,
