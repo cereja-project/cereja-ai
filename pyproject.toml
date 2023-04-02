@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "cereja==1.8.4"]
+requires = {file = ["requirements.txt"]}
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools]
