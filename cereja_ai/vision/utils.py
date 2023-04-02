@@ -1,5 +1,3 @@
-from abc import abstractmethod
-
 import calango
 import numpy as np
 import mediapipe as mp
@@ -61,25 +59,21 @@ class SequenceArray:
 
     def interpolate(self):
         """
-        Preenche valores vazios em uma sequência de coordenadas 3D.
-        Args:
-        - kpts: numpy.array de formato (seq_len, n_points, 3) com coordenadas 3D.
-        Returns:
-        - kpts_interp: numpy.array de formato (seq_len, n_points, 3) com valores interpolados.
+        Fills empty values in a 3D coordinate string.
         """
 
-        # Identifica os pontos com valores faltantes
+        # Identifies points with missing values
         has_missing_values = np.any(self._data == 0, axis=-1)
         if not np.any(has_missing_values):
             return
         idxs = np.unique(np.where(has_missing_values)[0])
-        # Quebra sequência quando o próximo não é subsequente
+        # Break sequence when next is not subsequent
         idxs = self._split_sequence_on_breaks(idxs)
 
-        # Interpola os valores faltantes
+        # Interpolate the missing values
         for seq in idxs:
-            # Se o primeiro frame está zerado pegamos o próximo válido
-            # TODO: Verificar se faz sentido pegar o último frame que pode ser repouso. Ou definir os kpts de repouso para não iniciar zerado.
+            # If the first frame is zero, we take the next valid one
+            # TODO: Check if it makes sense to get the last frame that can be rest. Or set the resting kpts to not start at zero.
             last_valid = seq[0] - 1 if seq[0] > 0 else seq[-1] + 1
             next_valid = seq[-1] + 1
             self._data[seq,] = np.linspace(self._data[last_valid if len(self._data) > last_valid else last_valid - 1],
@@ -90,9 +84,9 @@ class SequenceArray:
         if isinstance(v, (list, tuple, np.ndarray)):
             v = np.array(v, ndmin=len(self.shape))
         else:
-            raise TypeError("Tipo de dados inválido.")
+            raise TypeError("Invalid data type.")
         _shape = v.shape
-        assert self.shape[1:] == _shape[1:], f"Formato {_shape} é inválido. Expected {self.shape}"
+        assert self.shape[1:] == _shape[1:], f"Format {_shape} it is invalid. Expected {self.shape}"
         return v
 
     def __str__(self):
@@ -192,8 +186,6 @@ class VideoKeypointsSequence:
         # move all relative to wrist_pose.
         self.hand_l.data[:, ] = (self.hand_l - wrist_left_hand) + wrist_left_pose
         self.hand_r.data[:, ] = (self.hand_r - wrist_right_hand) + wrist_right_pose
-
-
 
 
 def _mediapipe_generator(draw=False):
