@@ -4,4 +4,3 @@ numpy
 calango~=2.2.6
 mediapipe
 opencv-python~=4.7.0.72
-setuptools>=61.0
