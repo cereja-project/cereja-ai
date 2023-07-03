@@ -3,4 +3,4 @@ tensorflow
 numpy
 calango
 mediapipe
-opencv-python~=4.7.0.72
+opencv-python~=4.8.0.74
